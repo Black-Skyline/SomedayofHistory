@@ -69,18 +69,68 @@ public class SomedayInHistoryActivity extends AppCompatActivity implements View.
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.inquire_today) {
-            sendRequestsByHttpURLConnection();
             month = "auto";
-        } else if (view.getId() == R.id.inquire_custom_day) {
             sendRequestsByHttpURLConnection();
+        } else if (view.getId() == R.id.inquire_custom_day) {
             month = edit_month.getText().toString();
             day = edit_day.getText().toString();
+
+            if (month.isEmpty() || day.isEmpty()) {
+                Toast.makeText(this, "请完成日期填写后再点击查询！", Toast.LENGTH_SHORT).show();
+            } else if (month.length() == 1 || day.length() == 1) {
+                Toast.makeText(this, "请按给定格式正确地输入！！！", Toast.LENGTH_SHORT).show();
+            } else {
+                if (isInteger(month) && isInteger(day)) {
+                    boolean signal;
+                    switch (Integer.parseInt(month)) {
+                        case 2:
+                            signal = Integer.parseInt(day) > 0 && Integer.parseInt(day) < 29;
+                            break;
+                        case 4:
+                        case 6:
+                        case 9:
+                        case 11:
+                            signal = Integer.parseInt(day) > 0 && Integer.parseInt(day) < 31;
+                            break;
+                        case 1:
+                        case 3:
+                        case 5:
+                        case 7:
+                        case 8:
+                        case 10:
+                        case 12:
+                            signal = Integer.parseInt(day) > 0 && Integer.parseInt(day) < 32;
+                            break;
+                        default:
+                            signal = false;
+                            break;
+                    }
+                    if (signal) {
+                        sendRequestsByHttpURLConnection();
+                    } else {
+                        Toast.makeText(this, "请输入正确的数字···", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(this, "请填入整数···", Toast.LENGTH_SHORT).show();
+                }
+
+            }
         } else if (view.getId() == R.id.change_bg) {
             Log.d("test", "get there!");
             Toast.makeText(this, "点击成功", Toast.LENGTH_SHORT).show();
             sendRequestsByOkHttp();
         }
 
+    }
+
+    // 使用Integer.parseInt()方法来分类选定字符串是否为整数
+    public static boolean isInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     //绑定区域
@@ -110,30 +160,8 @@ public class SomedayInHistoryActivity extends AppCompatActivity implements View.
                 URL_REQUEST(url_2, "GET", "HttpURLConnection");
             } else if (Integer.parseInt(month) > 0 && Integer.parseInt(month) < 13) {
                 //查询自定义日期
-                boolean signal;
-                switch (Integer.parseInt(month)) {
-                    case 2:
-                        signal = Integer.parseInt(day) > 0 && Integer.parseInt(day) < 29;
-                        break;
-                    case 4:
-                    case 6:
-                    case 9:
-                    case 11:
-                        signal = Integer.parseInt(day) > 0 && Integer.parseInt(day) < 31;
-                        break;
-                    default:
-                        signal = Integer.parseInt(day) > 0 && Integer.parseInt(day) < 32;
-                        break;
-                }
-                if (signal) {
-                    String url_1 = "https://baike.baidu.com/cms/home/eventsOnHistory/" + month + ".json";
-                    URL_REQUEST(url_1, "GET", "HttpURLConnection");
-                } else {
-                    Looper.prepare();
-                    Toast.makeText(this, "请输入正确的数字···", Toast.LENGTH_SHORT).show();
-                    Looper.loop();
-                }
-
+                String url_1 = "https://baike.baidu.com/cms/home/eventsOnHistory/" + month + ".json";
+                URL_REQUEST(url_1, "GET", "HttpURLConnection");
             } else {
                 Looper.prepare();
                 Toast.makeText(this, "请按给定格式正确地输入！！！", Toast.LENGTH_SHORT).show();
@@ -249,7 +277,7 @@ public class SomedayInHistoryActivity extends AppCompatActivity implements View.
                     }
                     */
                 }
-                
+
                 todayDate_text.setText(inquire_date);
 
                 ContentDisplayAdapter adapter = new ContentDisplayAdapter(result_content_data);
